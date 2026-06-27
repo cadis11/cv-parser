@@ -165,7 +165,7 @@
       2. Sign up free → API Keys → Create API Key<br>
       3. Copy key (starts with gsk_) and paste below
     </div>
-    <input type="password" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx"/>
+    <input type="text" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     <p class="hint">Stored only in your browser. Never shared.</p>
     <button class="btn-gold" style="width:100%" onclick="saveKey()">Save & Start →</button>
   </div>
@@ -258,11 +258,11 @@ const remarksStore={};
 // ── KEY ────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   const k=localStorage.getItem('groq_key');
-  if(k&&k.startsWith('gsk_')) document.getElementById('setup-overlay').style.display='none';
+  if(k&&k.length>10) document.getElementById('setup-overlay').style.display='none';
 });
 function saveKey(){
   const k=document.getElementById('groq-key-input').value.trim();
-  if(!k.startsWith('gsk_')){alert('Please enter a valid Groq key (starts with gsk_)');return;}
+  if(!k||k.length<10){alert('Please paste your Groq API key');return;}
   localStorage.setItem('groq_key',k);
   document.getElementById('setup-overlay').style.display='none';
   toast('Groq key saved!',true);
