@@ -391,12 +391,12 @@ async function extractText(fileObj){
     const base64=dataUrl.split(',')[1];
     return {type:'images',content:[base64],mime:file.type||'image/jpeg'};
   }
+  if(ext==='doc'){
     try{
       const t=await file.text();
       const readable=t.replace(/[^\x20-\x7E\n\r\t]/g,'').trim();
       if(readable.length>100) return {type:'text',content:readable};
     }catch(e){}
-    return {type:'unreadable'};
   }
   return {type:'unreadable'};
 }
