@@ -8,219 +8,267 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
   :root {
-    --gold: #C9A84C; --gold-light: #e8c96a; --dark: #0D0A06; --dark2: #1a1610;
-    --dark3: #252018; --text: #f0ead8; --text-muted: #9a8f78;
-    --border: rgba(201,168,76,0.2); --border-strong: rgba(201,168,76,0.5);
-    --success: #4caf7d; --danger: #e05c5c; --radius: 10px;
+    --gold:#C9A84C;--gold-light:#e8c96a;--dark:#0D0A06;--dark2:#1a1610;
+    --dark3:#252018;--text:#f0ead8;--text-muted:#9a8f78;
+    --border:rgba(201,168,76,0.2);--border-strong:rgba(201,168,76,0.5);
+    --success:#4caf7d;--danger:#e05c5c;--radius:10px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--dark);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
 
-  #setup-overlay {
-    position: fixed; inset: 0; background: var(--dark);
-    display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;
+  /* SETUP */
+  #setup-overlay{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+  .setup-card{background:var(--dark2);border:1px solid var(--border-strong);border-radius:16px;padding:2.5rem;max-width:460px;width:100%;text-align:center;}
+  .setup-card h2{font-size:22px;color:var(--gold);margin-bottom:.5rem;}
+  .setup-card p{font-size:14px;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;}
+  .setup-card input{width:100%;padding:12px 16px;background:var(--dark3);border:1px solid var(--border-strong);border-radius:var(--radius);color:var(--text);font-size:14px;margin-bottom:.75rem;outline:none;font-family:monospace;}
+  .setup-card input:focus{border-color:var(--gold);}
+  .info-box{background:rgba(201,168,76,0.05);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;font-size:13px;color:var(--text-muted);line-height:1.7;text-align:left;}
+  .info-box strong,.info-box a{color:var(--gold);}
+  .hint{font-size:12px;color:var(--text-muted);margin-bottom:1.5rem;}
+
+  /* HEADER */
+  header{background:var(--dark2);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+  .header-left{display:flex;align-items:center;gap:12px;}
+  .header-left h1{font-size:18px;font-weight:600;color:var(--gold);}
+  .header-left span.sub{font-size:12px;color:var(--text-muted);}
+  .key-badge{font-size:11px;background:rgba(201,168,76,0.1);border:1px solid var(--border);color:var(--gold);padding:4px 10px;border-radius:20px;cursor:pointer;}
+
+  .container{max-width:1100px;margin:0 auto;padding:1.5rem;}
+  .tabs{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
+  .tab{padding:9px 20px;font-size:14px;color:var(--text-muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .tab:hover:not(.active){color:var(--text);}
+
+  /* UPLOAD */
+  .upload-zone{border:2px dashed var(--border-strong);border-radius:16px;padding:3rem 2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--dark2);}
+  .upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(201,168,76,0.05);}
+  .upload-icon{font-size:48px;margin-bottom:1rem;opacity:.7;}
+  .upload-zone h3{font-size:16px;font-weight:500;margin-bottom:6px;}
+  .upload-zone p{font-size:13px;color:var(--text-muted);}
+  .upload-zone input{display:none;}
+  .format-badges{display:flex;gap:8px;justify-content:center;margin-top:1rem;flex-wrap:wrap;}
+  .fmt-badge{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text-muted);}
+  .fmt-badge.good{border-color:rgba(76,175,125,0.4);color:var(--success);background:rgba(76,175,125,0.08);}
+  .fmt-badge.ok{border-color:rgba(201,168,76,0.4);color:var(--gold);background:rgba(201,168,76,0.08);}
+  .browse-btn{display:inline-block;margin-top:1.2rem;padding:9px 24px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--gold);background:transparent;cursor:pointer;transition:all .2s;}
+  .browse-btn:hover{background:rgba(201,168,76,0.1);}
+
+  .queue-header{display:flex;justify-content:space-between;align-items:center;margin:1.5rem 0 .75rem;}
+  .queue-label{font-size:13px;color:var(--text-muted);font-weight:500;}
+  .file-item{background:var(--dark2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;}
+  .file-item.done{border-color:rgba(76,175,125,0.3);}
+  .file-item.error{border-color:rgba(224,92,92,0.3);}
+  .file-icon{width:38px;height:38px;border-radius:8px;background:rgba(201,168,76,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .file-info{flex:1;min-width:0;}
+  .file-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-meta{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .progress-bar{height:3px;background:var(--dark3);border-radius:2px;margin-top:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .4s;}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;flex-shrink:0;}
+  .badge-pending{background:rgba(154,143,120,0.15);color:var(--text-muted);}
+  .badge-processing{background:rgba(201,168,76,0.15);color:var(--gold);}
+  .badge-done{background:rgba(76,175,125,0.15);color:var(--success);}
+  .badge-error{background:rgba(224,92,92,0.15);color:var(--danger);}
+  .remove-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:4px 6px;border-radius:4px;}
+  .remove-btn:hover{color:var(--danger);background:rgba(224,92,92,0.1);}
+  .warn-box{background:rgba(224,92,92,0.08);border:1px solid rgba(224,92,92,0.3);border-radius:var(--radius);padding:.75rem 1rem;font-size:13px;color:#e88;margin-top:.5rem;}
+
+  /* BUTTONS */
+  .btn-gold{padding:10px 24px;background:var(--gold);color:var(--dark);border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-gold:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-outline{padding:10px 20px;background:transparent;color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;}
+  .btn-outline:hover{background:var(--dark3);border-color:var(--gold);}
+  .btn-outline:disabled{opacity:.4;cursor:not-allowed;}
+  .action-bar{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;flex-wrap:wrap;gap:12px;}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.5rem;}
+  .stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;}
+  .stat-card .s-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+  .stat-card .s-value{font-size:26px;font-weight:600;color:var(--gold);}
+
+  /* TABLE */
+  .result-actions{display:flex;gap:8px;justify-content:flex-end;margin-bottom:1rem;flex-wrap:wrap;}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px;}
+  thead tr{background:var(--dark3);}
+  thead th{padding:10px 14px;text-align:left;font-weight:500;color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(201,168,76,0.06);}
+  tbody td{padding:10px 14px;vertical-align:middle;}
+  .sn-cell{color:var(--text-muted);font-size:12px;font-weight:600;}
+  .name-cell{font-weight:500;}
+  .email-cell a{color:var(--gold);text-decoration:none;}
+  .muted-cell{color:var(--text-muted);font-style:italic;font-size:12px;}
+  .skill-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;margin:2px 2px 2px 0;color:var(--gold);}
+  .exp-badge{display:inline-block;background:rgba(76,175,125,0.1);border-radius:20px;padding:2px 8px;font-size:12px;color:var(--success);}
+  .view-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border-strong);color:var(--gold);background:transparent;cursor:pointer;white-space:nowrap;}
+  .view-btn:hover{background:rgba(201,168,76,0.1);}
+
+  .empty{text-align:center;padding:4rem 2rem;}
+  .empty .e-icon{font-size:48px;opacity:.3;margin-bottom:1rem;}
+  .empty p{color:var(--text-muted);font-size:14px;}
+
+  /* ── PROFILE CARD MODAL ── */
+  #profile-modal{
+    position:fixed;inset:0;z-index:500;
+    display:none;align-items:center;justify-content:center;padding:1rem;
+    background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
   }
-  .setup-card {
-    background: var(--dark2); border: 1px solid var(--border-strong);
-    border-radius: 16px; padding: 2.5rem; max-width: 460px; width: 100%; text-align: center;
+  #profile-modal.open{display:flex;}
+  .modal-card{
+    background:var(--dark2);border:1px solid var(--border-strong);
+    border-radius:18px;width:100%;max-width:580px;max-height:90vh;
+    overflow-y:auto;position:relative;
   }
-  .setup-card .logo { font-size: 40px; margin-bottom: 1rem; }
-  .setup-card h2 { font-size: 22px; color: var(--gold); margin-bottom: 0.5rem; }
-  .setup-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6; }
-  .setup-card input {
-    width: 100%; padding: 12px 16px; background: var(--dark3);
-    border: 1px solid var(--border-strong); border-radius: var(--radius);
-    color: var(--text); font-size: 14px; margin-bottom: 0.75rem; outline: none; font-family: monospace;
+  .modal-header{
+    padding:1.5rem 1.5rem 1rem;border-bottom:1px solid var(--border);
+    display:flex;align-items:flex-start;gap:1rem;position:sticky;top:0;
+    background:var(--dark2);border-radius:18px 18px 0 0;z-index:1;
   }
-  .setup-card input:focus { border-color: var(--gold); }
-  .info-box {
-    background: rgba(201,168,76,0.05); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem;
-    font-size: 13px; color: var(--text-muted); line-height: 1.7; text-align: left;
+  .avatar{
+    width:54px;height:54px;border-radius:50%;background:rgba(201,168,76,0.15);
+    border:2px solid var(--border-strong);display:flex;align-items:center;
+    justify-content:center;font-size:20px;font-weight:700;color:var(--gold);
+    flex-shrink:0;text-transform:uppercase;
   }
-  .info-box strong { color: var(--gold); }
-  .info-box a { color: var(--gold); }
-  .hint { font-size: 12px; color: var(--text-muted); margin-bottom: 1.5rem; }
-
-  header {
-    background: var(--dark2); border-bottom: 1px solid var(--border);
-    padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  .modal-name{font-size:18px;font-weight:600;color:var(--text);margin-bottom:3px;}
+  .modal-title{font-size:13px;color:var(--gold);}
+  .modal-close{
+    position:absolute;top:1rem;right:1rem;background:none;border:none;
+    color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px 8px;
+    border-radius:6px;line-height:1;
   }
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .header-left h1 { font-size: 18px; font-weight: 600; color: var(--gold); }
-  .header-left span { font-size: 12px; color: var(--text-muted); }
-  .key-badge {
-    font-size: 11px; background: rgba(201,168,76,0.1); border: 1px solid var(--border);
-    color: var(--gold); padding: 4px 10px; border-radius: 20px; cursor: pointer;
+  .modal-close:hover{color:var(--text);background:var(--dark3);}
+
+  .modal-body{padding:1.25rem 1.5rem 1.5rem;}
+
+  /* Quick verdict banner */
+  .verdict-banner{
+    border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;
+    border:1px solid;
   }
+  .verdict-banner.strong{background:rgba(76,175,125,0.08);border-color:rgba(76,175,125,0.3);}
+  .verdict-banner.average{background:rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.3);}
+  .verdict-banner.junior{background:rgba(154,143,120,0.08);border-color:rgba(154,143,120,0.3);}
+  .verdict-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px;}
+  .verdict-banner.strong .verdict-label{color:var(--success);}
+  .verdict-banner.average .verdict-label{color:var(--gold);}
+  .verdict-banner.junior .verdict-label{color:var(--text-muted);}
+  .verdict-text{font-size:14px;color:var(--text);line-height:1.6;}
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-  .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-  .tab {
-    padding: 9px 20px; font-size: 14px; color: var(--text-muted); cursor: pointer;
-    border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s;
+  /* AI Quick summary */
+  .ai-summary-box{
+    background:var(--dark3);border:1px solid var(--border);border-radius:12px;
+    padding:1rem 1.25rem;margin-bottom:1.25rem;
   }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-  .tab:hover:not(.active) { color: var(--text); }
+  .ai-summary-box .ai-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;display:flex;align-items:center;gap:6px;}
+  .ai-summary-box .ai-label span{background:rgba(201,168,76,0.15);color:var(--gold);border-radius:20px;padding:1px 8px;font-size:10px;}
+  .ai-summary-box .ai-text{font-size:14px;color:var(--text);line-height:1.7;}
 
-  .upload-zone {
-    border: 2px dashed var(--border-strong); border-radius: 16px;
-    padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--dark2);
-  }
-  .upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: rgba(201,168,76,0.05); }
-  .upload-zone .upload-icon { font-size: 48px; margin-bottom: 1rem; opacity: 0.7; }
-  .upload-zone h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
-  .upload-zone p { font-size: 13px; color: var(--text-muted); }
-  .upload-zone input { display: none; }
+  /* Info grid */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+  .info-item{background:var(--dark3);border-radius:10px;padding:.75rem 1rem;}
+  .info-item .i-label{font-size:11px;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;}
+  .info-item .i-val{font-size:13px;color:var(--text);font-weight:500;word-break:break-all;}
+  .info-item .i-val a{color:var(--gold);text-decoration:none;}
+  .info-item.full{grid-column:1/-1;}
 
-  .format-badges { display: flex; gap: 8px; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
-  .fmt-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted); }
-  .fmt-badge.good { border-color: rgba(76,175,125,0.4); color: var(--success); background: rgba(76,175,125,0.08); }
-  .fmt-badge.ok { border-color: rgba(201,168,76,0.4); color: var(--gold); background: rgba(201,168,76,0.08); }
+  /* Skills section */
+  .section-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;font-weight:500;}
+  .skills-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+  .skill-pill{background:rgba(201,168,76,0.1);border:1px solid var(--border-strong);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--gold);}
 
-  .browse-btn {
-    display: inline-block; margin-top: 1.2rem; padding: 9px 24px;
-    border: 1px solid var(--border-strong); border-radius: var(--radius);
-    font-size: 13px; color: var(--gold); background: transparent; cursor: pointer; transition: all 0.2s;
-  }
-  .browse-btn:hover { background: rgba(201,168,76,0.1); }
+  /* Demand tags */
+  .demand-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+  .demand-tag{border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;}
+  .demand-exp{background:rgba(76,175,125,0.1);color:var(--success);border:1px solid rgba(76,175,125,0.3);}
+  .demand-edu{background:rgba(100,150,220,0.1);color:#7eb3f5;border:1px solid rgba(100,150,220,0.3);}
+  .demand-lang{background:rgba(180,100,220,0.1);color:#c97ef5;border:1px solid rgba(180,100,220,0.3);}
+  .demand-loc{background:rgba(224,92,92,0.1);color:#e08888;border:1px solid rgba(224,92,92,0.3);}
 
-  .queue-header { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 0.75rem; }
-  .queue-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  /* Nav arrows */
+  .modal-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);}
+  .modal-nav button{padding:7px 16px;font-size:13px;}
+  .nav-counter{font-size:13px;color:var(--text-muted);}
 
-  .file-item {
-    background: var(--dark2); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; transition: border-color 0.2s;
-  }
-  .file-item.done { border-color: rgba(76,175,125,0.3); }
-  .file-item.error { border-color: rgba(224,92,92,0.3); }
-  .file-icon { width: 38px; height: 38px; border-radius: 8px; background: rgba(201,168,76,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .file-info { flex: 1; min-width: 0; }
-  .file-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .progress-bar { height: 3px; background: var(--dark3); border-radius: 2px; margin-top: 6px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s; }
+  /* Loading spinner in modal */
+  .modal-loading{padding:2rem;text-align:center;color:var(--text-muted);font-size:14px;}
+  .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-  .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
-  .badge-pending { background: rgba(154,143,120,0.15); color: var(--text-muted); }
-  .badge-processing { background: rgba(201,168,76,0.15); color: var(--gold); }
-  .badge-done { background: rgba(76,175,125,0.15); color: var(--success); }
-  .badge-error { background: rgba(224,92,92,0.15); color: var(--danger); }
-
-  .remove-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px; padding: 4px 6px; border-radius: 4px; }
-  .remove-btn:hover { color: var(--danger); background: rgba(224,92,92,0.1); }
-
-  .btn-gold {
-    padding: 10px 24px; background: var(--gold); color: var(--dark);
-    border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;
-  }
-  .btn-gold:hover { background: var(--gold-light); }
-  .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-outline {
-    padding: 10px 20px; background: transparent; color: var(--text);
-    border: 1px solid var(--border-strong); border-radius: var(--radius);
-    font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;
-  }
-  .btn-outline:hover { background: var(--dark3); border-color: var(--gold); }
-  .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 12px; }
-
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--dark2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
-  .stat-card .s-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .stat-card .s-value { font-size: 26px; font-weight: 600; color: var(--gold); }
-
-  .result-actions { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 1rem; flex-wrap: wrap; }
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
-  thead tr { background: var(--dark3); }
-  thead th { padding: 10px 14px; text-align: left; font-weight: 500; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  tbody tr { border-bottom: 1px solid var(--border); }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--dark2); }
-  tbody td { padding: 10px 14px; vertical-align: middle; }
-  .sn-cell { color: var(--text-muted); font-size: 12px; font-weight: 600; }
-  .name-cell { font-weight: 500; }
-  .email-cell a { color: var(--gold); text-decoration: none; }
-  .muted-cell { color: var(--text-muted); font-style: italic; font-size: 12px; }
-  .skill-tag { display: inline-block; background: rgba(201,168,76,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; font-size: 11px; margin: 2px 2px 2px 0; color: var(--gold); }
-  .exp-badge { display: inline-block; background: rgba(76,175,125,0.1); border-radius: 20px; padding: 2px 8px; font-size: 12px; color: var(--success); }
-
-  .empty { text-align: center; padding: 4rem 2rem; }
-  .empty .e-icon { font-size: 48px; opacity: 0.3; margin-bottom: 1rem; }
-  .empty p { color: var(--text-muted); font-size: 14px; }
-
-  .warn-box { background: rgba(224,92,92,0.08); border: 1px solid rgba(224,92,92,0.3); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 13px; color: #e88; margin-top: 0.5rem; }
-
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--dark2); border: 1px solid var(--border-strong); border-radius: 10px; padding: 12px 20px; font-size: 14px; color: var(--text); z-index: 9999; display: none; align-items: center; gap: 8px; }
-  .toast-success { border-color: rgba(76,175,125,0.5) !important; }
-  .toast-success .t-icon { color: var(--success); }
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--dark2);border:1px solid var(--border-strong);border-radius:10px;padding:12px 20px;font-size:14px;color:var(--text);z-index:9999;display:none;align-items:center;gap:8px;}
+  .toast-success{border-color:rgba(76,175,125,0.5)!important;}
+  .toast-success .t-icon{color:var(--success);}
 </style>
 </head>
 <body>
 
+<!-- SETUP -->
 <div id="setup-overlay">
   <div class="setup-card">
-    <div class="logo">📋</div>
+    <div style="font-size:40px;margin-bottom:1rem">📋</div>
     <h2>CV Parser — HR Tool</h2>
-    <p>Paste your <strong style="color:var(--gold)">Groq API key</strong> once to get started. It stays saved in your browser.</p>
+    <p>Paste your <strong style="color:var(--gold)">Groq API key</strong> once to get started.</p>
     <div class="info-box">
       <strong>Get your free Groq key:</strong><br>
       1. Go to <a href="https://console.groq.com" target="_blank">console.groq.com</a><br>
       2. Sign up free → API Keys → Create API Key<br>
-      3. Copy the key (starts with gsk_) and paste below
+      3. Copy key (starts with gsk_) and paste below
     </div>
-    <input type="password" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" />
-    <p class="hint">Stored only in your browser. Never shared anywhere else.</p>
+    <input type="password" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx"/>
+    <p class="hint">Stored only in your browser. Never sent anywhere else.</p>
     <button class="btn-gold" style="width:100%" onclick="saveKey()">Save & Start →</button>
   </div>
 </div>
 
+<!-- HEADER -->
 <header>
   <div class="header-left">
     <span style="font-size:24px">📋</span>
     <div>
       <h1>CV Parser</h1>
-      <span>HR Recruitment Tool — Maharaja Casino</span>
+      <span class="sub">HR Recruitment Tool — Maharaja Casino</span>
     </div>
   </div>
   <span class="key-badge" onclick="changeKey()">🔑 Groq Connected</span>
 </header>
 
+<!-- MAIN -->
 <div class="container">
   <div class="tabs">
     <button class="tab active" onclick="switchTab('upload')">📤 Upload CVs</button>
     <button class="tab" onclick="switchTab('results')">📊 Results <span id="res-count" style="background:rgba(201,168,76,0.15);color:var(--gold);border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
   </div>
 
+  <!-- UPLOAD TAB -->
   <div id="tab-upload">
     <div class="upload-zone" id="dropzone"
       onclick="document.getElementById('fileInput').click()"
       ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
       <div class="upload-icon">📂</div>
       <h3>Drop CV files here or browse</h3>
-      <p>The app reads the actual content — no guessing</p>
+      <p>App reads the actual text — no guessing</p>
       <div class="format-badges">
-        <span class="fmt-badge good">✓ PDF — best</span>
         <span class="fmt-badge good">✓ TXT — best</span>
-        <span class="fmt-badge good">✓ DOCX — supported</span>
-        <span class="fmt-badge ok">⚠ DOC — limited</span>
+        <span class="fmt-badge good">✓ DOCX — great</span>
+        <span class="fmt-badge ok">⚠ PDF — text only</span>
+        <span class="fmt-badge">DOC — limited</span>
       </div>
       <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" onchange="addFiles(this.files)">
       <button class="browse-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse Files</button>
     </div>
-
     <div id="queue-section" style="display:none">
       <div class="queue-header">
-        <span class="queue-label" id="queue-label">0 files queued</span>
+        <span class="queue-label" id="queue-label">0 files</span>
         <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="clearPending()">🗑 Clear pending</button>
       </div>
       <div id="file-list"></div>
-      <div id="pdf-warning" style="display:none" class="warn-box">
-        ⚠️ <strong>PDF tip:</strong> PDFs work best when they contain real text (not scanned images). If a PDF is a scanned image, convert it to DOCX or TXT first for accurate results.
-      </div>
+      <div id="pdf-warning" style="display:none" class="warn-box">⚠️ PDFs work best when digital (not scanned). Convert scanned PDFs to DOCX/TXT for accurate results.</div>
       <div class="action-bar">
         <span id="parse-status" style="font-size:13px;color:var(--text-muted)"></span>
         <button class="btn-gold" id="parse-btn" onclick="parseAll()">⚡ Extract All CVs</button>
@@ -228,15 +276,33 @@
     </div>
   </div>
 
+  <!-- RESULTS TAB -->
   <div id="tab-results" style="display:none">
     <div id="stats-bar" style="display:none"></div>
     <div class="result-actions">
-      <button class="btn-outline" onclick="clearResults()" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">🗑 Clear results</button>
+      <button class="btn-outline" onclick="clearResults()" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">🗑 Clear</button>
       <button class="btn-outline" onclick="copyCSV()">📋 Copy CSV</button>
       <button class="btn-gold" onclick="downloadExcel()">⬇️ Download Excel</button>
     </div>
     <div id="results-area">
-      <div class="empty"><div class="e-icon">📊</div><p>No CVs parsed yet. Go to Upload tab to get started.</p></div>
+      <div class="empty"><div class="e-icon">📊</div><p>No CVs parsed yet.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profile-modal" onclick="closeModal(event)">
+  <div class="modal-card" id="modal-card">
+    <div class="modal-header">
+      <div class="avatar" id="modal-avatar">?</div>
+      <div style="flex:1;min-width:0">
+        <div class="modal-name" id="modal-name">—</div>
+        <div class="modal-title" id="modal-title">—</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('profile-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-loading"><span class="spinner"></span> Generating profile...</div>
     </div>
   </div>
 </div>
@@ -244,336 +310,374 @@
 <div id="toast"><span class="t-icon">✓</span><span id="toast-msg"></span></div>
 
 <script>
-let files = [];
-let results = [];
+let files=[], results=[], currentModalIdx=0;
+const aiSummaryCache={};
 
 // ── KEY ────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  const k = localStorage.getItem('groq_key');
-  if (k && k.startsWith('gsk_')) document.getElementById('setup-overlay').style.display = 'none';
+window.addEventListener('DOMContentLoaded',()=>{
+  const k=localStorage.getItem('groq_key');
+  if(k&&k.startsWith('gsk_')) document.getElementById('setup-overlay').style.display='none';
 });
-function saveKey() {
-  const k = document.getElementById('groq-key-input').value.trim();
-  if (!k.startsWith('gsk_')) { alert('Please enter a valid Groq key (starts with gsk_)'); return; }
-  localStorage.setItem('groq_key', k);
-  document.getElementById('setup-overlay').style.display = 'none';
-  toast('Groq key saved — ready!', true);
+function saveKey(){
+  const k=document.getElementById('groq-key-input').value.trim();
+  if(!k.startsWith('gsk_')){alert('Please enter a valid Groq key (starts with gsk_)');return;}
+  localStorage.setItem('groq_key',k);
+  document.getElementById('setup-overlay').style.display='none';
+  toast('Groq key saved!',true);
 }
-function changeKey() {
-  if (confirm('Change your Groq API key?')) { localStorage.removeItem('groq_key'); location.reload(); }
-}
+function changeKey(){if(confirm('Change Groq API key?')){localStorage.removeItem('groq_key');location.reload();}}
 
 // ── TABS ───────────────────────────────────────────────────────────────
-function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', ['upload','results'][i]===t));
-  document.getElementById('tab-upload').style.display = t==='upload' ? '' : 'none';
-  document.getElementById('tab-results').style.display = t==='results' ? '' : 'none';
-  if (t==='results') renderResults();
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['upload','results'][i]===t));
+  document.getElementById('tab-upload').style.display=t==='upload'?'':'none';
+  document.getElementById('tab-results').style.display=t==='results'?'':'none';
+  if(t==='results') renderResults();
 }
 
 // ── DRAG DROP ──────────────────────────────────────────────────────────
-function onDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('drag'); }
-function onDragLeave() { document.getElementById('dropzone').classList.remove('drag'); }
-function onDrop(e) { e.preventDefault(); document.getElementById('dropzone').classList.remove('drag'); addFiles(e.dataTransfer.files); }
+function onDragOver(e){e.preventDefault();document.getElementById('dropzone').classList.add('drag');}
+function onDragLeave(){document.getElementById('dropzone').classList.remove('drag');}
+function onDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag');addFiles(e.dataTransfer.files);}
 
-function addFiles(newFiles) {
-  Array.from(newFiles).forEach(f => {
-    const ext = f.name.split('.').pop().toLowerCase();
-    if (['pdf','doc','docx','txt'].includes(ext))
-      files.push({ id: Date.now()+Math.random(), file: f, ext, status: 'pending', progress: 0 });
+function addFiles(newFiles){
+  Array.from(newFiles).forEach(f=>{
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(['pdf','doc','docx','txt'].includes(ext))
+      files.push({id:Date.now()+Math.random(),file:f,ext,status:'pending',progress:0});
   });
   renderQueue();
 }
-
-function renderQueue() {
-  const section = document.getElementById('queue-section');
-  section.style.display = files.length ? '' : 'none';
-  document.getElementById('queue-label').textContent = `${files.length} file${files.length!==1?'s':''} queued`;
-  const hasPdf = files.some(f => f.ext === 'pdf');
-  document.getElementById('pdf-warning').style.display = hasPdf ? '' : 'none';
-
-  document.getElementById('file-list').innerHTML = files.map(f => `
+function renderQueue(){
+  const section=document.getElementById('queue-section');
+  section.style.display=files.length?'':'none';
+  document.getElementById('queue-label').textContent=`${files.length} file${files.length!==1?'s':''} queued`;
+  document.getElementById('pdf-warning').style.display=files.some(f=>f.ext==='pdf')?'':'none';
+  document.getElementById('file-list').innerHTML=files.map(f=>`
     <div class="file-item ${f.status}">
       <div class="file-icon">${f.ext==='pdf'?'📕':f.ext==='txt'?'📄':'📝'}</div>
       <div class="file-info">
         <div class="file-name">${f.file.name}</div>
-        <div class="file-meta">${(f.file.size/1024).toFixed(1)} KB · .${f.ext.toUpperCase()}${f.status==='processing'?' · Reading & extracting...':''}</div>
+        <div class="file-meta">${(f.file.size/1024).toFixed(1)} KB · .${f.ext.toUpperCase()}${f.status==='processing'?' · Extracting...':''}</div>
         ${f.status==='processing'?`<div class="progress-bar"><div class="progress-fill" style="width:${f.progress}%"></div></div>`:''}
       </div>
-      <span class="badge badge-${f.status}">${
-        f.status==='pending'?'Queued':f.status==='processing'?'Processing':f.status==='done'?'✓ Done':'✗ Error'
-      }</span>
+      <span class="badge badge-${f.status}">${f.status==='pending'?'Queued':f.status==='processing'?'Processing':f.status==='done'?'✓ Done':'✗ Error'}</span>
       ${f.status==='pending'?`<button class="remove-btn" onclick="removeFile('${f.id}')">✕</button>`:''}
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-
-function removeFile(id) { files=files.filter(f=>f.id!=id); renderQueue(); }
-function clearPending() { files=files.filter(f=>f.status!=='pending'); renderQueue(); }
+function removeFile(id){files=files.filter(f=>f.id!=id);renderQueue();}
+function clearPending(){files=files.filter(f=>f.status!=='pending');renderQueue();}
 
 // ── TEXT EXTRACTION ────────────────────────────────────────────────────
-async function extractText(fileObj) {
-  const { file, ext } = fileObj;
-
-  if (ext === 'txt') {
-    return await file.text();
+async function extractText(fileObj){
+  const{file,ext}=fileObj;
+  if(ext==='txt') return await file.text();
+  if(ext==='docx'){
+    const ab=await file.arrayBuffer();
+    const r=await mammoth.extractRawText({arrayBuffer:ab});
+    return r.value;
   }
-
-  if (ext === 'docx') {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  }
-
-  if (ext === 'pdf') {
-    // Read PDF as base64 for Groq vision — but Groq doesn't support PDFs
-    // Instead, try to read as text (works for text-based PDFs)
-    try {
-      const text = await file.text();
-      // Check if it's readable text (not binary)
-      const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, '').trim();
-      if (readable.length > 100) return readable;
-    } catch(e) {}
-    // Return null to signal we'll use filename-based approach with disclaimer
+  if(ext==='pdf'||ext==='doc'){
+    try{
+      const t=await file.text();
+      const readable=t.replace(/[^\x20-\x7E\n\r\t]/g,'').trim();
+      if(readable.length>100) return readable;
+    }catch(e){}
     return null;
   }
-
-  if (ext === 'doc') {
-    // Old .doc format — try as text
-    try {
-      const text = await file.text();
-      const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g,' ').trim();
-      if (readable.length > 50) return readable;
-    } catch(e) {}
-    return null;
-  }
-
   return null;
 }
 
 // ── PARSE ALL ──────────────────────────────────────────────────────────
-async function parseAll() {
-  const pending = files.filter(f => f.status === 'pending');
-  if (!pending.length) return;
+async function parseAll(){
+  const pending=files.filter(f=>f.status==='pending');
+  if(!pending.length) return;
+  const key=localStorage.getItem('groq_key');
+  if(!key){changeKey();return;}
+  document.getElementById('parse-btn').disabled=true;
+  document.getElementById('parse-status').textContent=`Processing ${pending.length} CV${pending.length>1?'s':''}...`;
 
-  const key = localStorage.getItem('groq_key');
-  if (!key) { changeKey(); return; }
+  for(let f of pending){
+    f.status='processing';f.progress=15;renderQueue();
+    try{
+      f.progress=30;renderQueue();
+      const extractedText=await extractText(f);
+      f.progress=55;renderQueue();
 
-  document.getElementById('parse-btn').disabled = true;
-  document.getElementById('parse-status').textContent = `Processing ${pending.length} CV${pending.length>1?'s':''}...`;
-
-  for (let f of pending) {
-    f.status = 'processing'; f.progress = 15; renderQueue();
-
-    try {
-      // Step 1: Extract actual text from file
-      f.progress = 30; renderQueue();
-      const extractedText = await extractText(f);
-
-      f.progress = 55; renderQueue();
-
-      let prompt = '';
-      let isGuessing = false;
-
-      if (extractedText && extractedText.trim().length > 80) {
-        // We have real text — use it
-        prompt = `Extract structured CV information from this resume text. Use ONLY the exact data present in the text. Do not invent or guess any information.\n\nRESUME TEXT:\n${extractedText.slice(0, 9000)}`;
+      let prompt,isGuessing=false;
+      if(extractedText&&extractedText.trim().length>80){
+        prompt=`Extract structured CV information from this resume. Use ONLY data present in the text. Do not invent anything.\n\nRESUME:\n${extractedText.slice(0,9000)}`;
       } else {
-        // Binary file we can't read — be honest
-        isGuessing = true;
-        prompt = `The CV file "${f.file.name}" could not be read as text (likely a scanned PDF or binary format). Return a JSON with all fields set to null except "full_name" which should be null, and add a note in "summary" saying "File could not be read. Please convert to TXT or DOCX and re-upload."`;
+        isGuessing=true;
+        prompt=`File "${f.file.name}" could not be read. Return JSON with all fields null, summary: "File could not be read — please convert to TXT or DOCX."`;
       }
 
-      f.progress = 70; renderQueue();
-
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: 900,
-          temperature: 0.0,
-          messages: [
-            {
-              role: 'system',
-              content: `You are a precise CV data extractor. Extract ONLY information explicitly present in the text. Never guess, fabricate, or hallucinate any details. If a field is not found in the text, return null for that field.
-
-Return ONLY this JSON structure with no markdown or explanation:
+      f.progress=70;renderQueue();
+      const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+        body:JSON.stringify({
+          model:'llama-3.3-70b-versatile',max_tokens:900,temperature:0.0,
+          messages:[
+            {role:'system',content:`Extract CV data precisely. Return ONLY valid JSON, no markdown.
 {
-  "full_name": "exact name from CV or null",
-  "email": "exact email from CV or null",
-  "phone": "exact phone number as written in CV or null",
-  "location": "city/country from CV or null",
-  "current_title": "current job title from CV or null",
-  "years_experience": number (calculate from work history) or null,
-  "education": "highest degree + institution from CV or null",
-  "skills": ["list of skills explicitly mentioned, max 10"],
-  "languages": ["languages mentioned in CV"],
-  "last_employer": "most recent employer name or null",
-  "summary": "brief 2-sentence summary based on CV content or null"
-}`
-            },
-            { role: 'user', content: prompt }
+  "full_name": "exact name or null",
+  "email": "exact email or null",
+  "phone": "exact phone as written or null",
+  "location": "city/country or null",
+  "current_title": "current job title or null",
+  "years_experience": number or null,
+  "education": "highest degree + institution or null",
+  "skills": ["up to 10 skills explicitly mentioned"],
+  "languages": ["languages mentioned"],
+  "last_employer": "most recent employer or null",
+  "summary": "2 sentence professional summary based on CV"
+}`},
+            {role:'user',content:prompt}
           ]
         })
       });
-
-      f.progress = 88; renderQueue();
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error?.message || 'Groq API error');
-
-      const raw = data.choices?.[0]?.message?.content || '{}';
-      const clean = raw.replace(/```json|```/g,'').trim();
-      const parsed = JSON.parse(clean);
-
-      parsed._filename = f.file.name;
-      parsed._parsed_at = new Date().toLocaleString('en-GB');
-      parsed._guessed = isGuessing;
+      f.progress=88;renderQueue();
+      const data=await resp.json();
+      if(!resp.ok) throw new Error(data.error?.message||'Groq error');
+      const raw=data.choices?.[0]?.message?.content||'{}';
+      const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      parsed._filename=f.file.name;
+      parsed._parsed_at=new Date().toLocaleString('en-GB');
+      parsed._guessed=isGuessing;
       results.push(parsed);
-
-      f.status = 'done'; f.progress = 100;
-      document.getElementById('res-count').textContent = results.length;
-
-    } catch(err) {
-      console.error(f.file.name, err);
-      f.status = 'error';
-    }
-
+      f.status='done';f.progress=100;
+      document.getElementById('res-count').textContent=results.length;
+    }catch(err){console.error(f.file.name,err);f.status='error';}
     renderQueue();
   }
-
-  document.getElementById('parse-btn').disabled = false;
-  document.getElementById('parse-status').textContent = '';
-
-  const done = files.filter(f=>f.status==='done').length;
-  toast(`${done} CV${done>1?'s':''} processed ✓`, true);
+  document.getElementById('parse-btn').disabled=false;
+  document.getElementById('parse-status').textContent='';
+  const done=files.filter(f=>f.status==='done').length;
+  toast(`${done} CV${done>1?'s':''} processed ✓`,true);
   renderResults();
 }
 
 // ── RENDER RESULTS ─────────────────────────────────────────────────────
-function renderResults() {
-  const area = document.getElementById('results-area');
-  const statsBar = document.getElementById('stats-bar');
-
-  if (!results.length) {
-    area.innerHTML = `<div class="empty"><div class="e-icon">📊</div><p>No CVs parsed yet. Go to Upload tab to get started.</p></div>`;
-    statsBar.style.display = 'none';
-    return;
+function renderResults(){
+  const area=document.getElementById('results-area');
+  const sb=document.getElementById('stats-bar');
+  if(!results.length){
+    area.innerHTML=`<div class="empty"><div class="e-icon">📊</div><p>No CVs parsed yet.</p></div>`;
+    sb.style.display='none';return;
   }
-
-  const withExp = results.filter(r=>r.years_experience);
-  const avgExp = withExp.length ? (withExp.reduce((s,r)=>s+r.years_experience,0)/withExp.length).toFixed(1) : 'N/A';
-
-  statsBar.style.display = 'grid';
-  statsBar.className = 'stats-grid';
-  statsBar.innerHTML = `
+  const withExp=results.filter(r=>r.years_experience);
+  const avgExp=withExp.length?(withExp.reduce((s,r)=>s+r.years_experience,0)/withExp.length).toFixed(1):'N/A';
+  sb.style.display='grid';sb.className='stats-grid';
+  sb.innerHTML=`
     <div class="stat-card"><div class="s-label">Total CVs</div><div class="s-value">${results.length}</div></div>
     <div class="stat-card"><div class="s-label">Avg Experience</div><div class="s-value">${avgExp}${avgExp!=='N/A'?'y':''}</div></div>
     <div class="stat-card"><div class="s-label">Have Email</div><div class="s-value">${results.filter(r=>r.email).length}</div></div>
     <div class="stat-card"><div class="s-label">Have Phone</div><div class="s-value">${results.filter(r=>r.phone).length}</div></div>
-    <div class="stat-card"><div class="s-label">Read Errors</div><div class="s-value" style="color:${results.filter(r=>r._guessed).length?'var(--danger)':'var(--success)'}">${results.filter(r=>r._guessed).length}</div></div>
-  `;
+    <div class="stat-card"><div class="s-label">Errors</div><div class="s-value" style="color:${results.filter(r=>r._guessed).length?'var(--danger)':'var(--success)'}">${results.filter(r=>r._guessed).length}</div></div>`;
 
-  area.innerHTML = `
+  area.innerHTML=`
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:.75rem">👆 Click any row to view full profile card</p>
     <div class="table-wrap">
       <table>
         <thead><tr>
           <th>SN</th><th>Full Name</th><th>Email</th><th>Phone</th>
-          <th>Location</th><th>Current Title</th><th>Exp</th>
-          <th>Education</th><th>Top Skills</th><th>Last Employer</th><th>Languages</th>
+          <th>Location</th><th>Title</th><th>Exp</th><th>Skills</th><th>Profile</th>
         </tr></thead>
         <tbody>
-          ${results.map((r,i) => `
-            <tr style="${r._guessed?'opacity:0.6':''}">
+          ${results.map((r,i)=>`
+            <tr onclick="openModal(${i})">
               <td class="sn-cell">${i+1}</td>
-              <td class="name-cell">${r.full_name||'<span class="muted-cell">—</span>'}${r._guessed?` <span style="font-size:10px;color:var(--danger)">⚠ unreadable</span>`:''}</td>
-              <td class="email-cell">${r.email?`<a href="mailto:${r.email}">${r.email}</a>`:'<span class="muted-cell">—</span>'}</td>
+              <td class="name-cell">${r.full_name||'<span class="muted-cell">—</span>'}${r._guessed?` <span style="font-size:10px;color:var(--danger)">⚠</span>`:''}</td>
+              <td class="email-cell">${r.email?`<a href="mailto:${r.email}" onclick="event.stopPropagation()">${r.email}</a>`:'<span class="muted-cell">—</span>'}</td>
               <td>${r.phone||'<span class="muted-cell">—</span>'}</td>
               <td>${r.location||'<span class="muted-cell">—</span>'}</td>
               <td>${r.current_title||'<span class="muted-cell">—</span>'}</td>
               <td>${r.years_experience!=null?`<span class="exp-badge">${r.years_experience}y</span>`:'<span class="muted-cell">—</span>'}</td>
-              <td style="font-size:12px;max-width:160px">${r.education||'<span class="muted-cell">—</span>'}</td>
-              <td style="max-width:180px">${(r.skills||[]).map(s=>`<span class="skill-tag">${s}</span>`).join('')||'<span class="muted-cell">—</span>'}</td>
-              <td style="font-size:12px">${r.last_employer||'<span class="muted-cell">—</span>'}</td>
-              <td style="font-size:12px">${(r.languages||[]).join(', ')||'<span class="muted-cell">—</span>'}</td>
-            </tr>
-          `).join('')}
+              <td style="max-width:180px">${(r.skills||[]).slice(0,4).map(s=>`<span class="skill-tag">${s}</span>`).join('')}${(r.skills||[]).length>4?`<span class="muted-cell"> +${r.skills.length-4}</span>`:''}</td>
+              <td><button class="view-btn" onclick="event.stopPropagation();openModal(${i})">👤 View</button></td>
+            </tr>`).join('')}
         </tbody>
       </table>
-    </div>
-  `;
+    </div>`;
 }
 
-function clearResults() {
-  if (!confirm('Clear all parsed results?')) return;
-  results = [];
-  document.getElementById('res-count').textContent = '0';
+// ── PROFILE MODAL ──────────────────────────────────────────────────────
+function getInitials(name){
+  if(!name) return '?';
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function verdictFromData(r){
+  const exp=r.years_experience||0;
+  if(exp>=5) return{cls:'strong',label:'Strong Candidate',text:`${exp}+ years of experience with a solid background in ${(r.skills||[]).slice(0,2).join(' and ')||'their field'}.`};
+  if(exp>=2) return{cls:'average',label:'Mid-Level Candidate',text:`${exp} years experience. Suitable for mid-level roles requiring ${(r.skills||[]).slice(0,2).join(' and ')||'relevant skills'}.`};
+  return{cls:'junior',label:'Junior / Entry Level',text:`${exp?exp+' year(s)':'Limited'} of experience. Best suited for entry-level or training positions.`};
+}
+
+async function getAISummary(idx){
+  if(aiSummaryCache[idx]) return aiSummaryCache[idx];
+  const r=results[idx];
+  const key=localStorage.getItem('groq_key');
+  if(!key) return null;
+
+  const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({
+      model:'llama-3.3-70b-versatile',max_tokens:300,temperature:0.3,
+      messages:[
+        {role:'system',content:'You are an HR assistant. Write a concise 3-sentence candidate profile for a recruiter. Cover: who they are, what they bring, and one hiring recommendation. Be direct and practical. No fluff.'},
+        {role:'user',content:`Candidate: ${r.full_name||'Unknown'}
+Title: ${r.current_title||'N/A'}
+Experience: ${r.years_experience||'unknown'} years
+Last Employer: ${r.last_employer||'N/A'}
+Education: ${r.education||'N/A'}
+Skills: ${(r.skills||[]).join(', ')||'N/A'}
+Languages: ${(r.languages||[]).join(', ')||'N/A'}
+Location: ${r.location||'N/A'}
+Summary from CV: ${r.summary||'N/A'}
+
+Write a 3-sentence HR recruiter profile.`}
+      ]
+    })
+  });
+  const data=await resp.json();
+  const text=data.choices?.[0]?.message?.content||'Could not generate summary.';
+  aiSummaryCache[idx]=text;
+  return text;
+}
+
+async function openModal(idx){
+  currentModalIdx=idx;
+  const r=results[idx];
+  const modal=document.getElementById('profile-modal');
+  modal.classList.add('open');
+
+  // Set header
+  document.getElementById('modal-avatar').textContent=getInitials(r.full_name);
+  document.getElementById('modal-name').textContent=r.full_name||'Unknown Candidate';
+  document.getElementById('modal-title').textContent=`${r.current_title||'No title'}${r.last_employer?' · '+r.last_employer:''}`;
+
+  // Show loading
+  document.getElementById('modal-body').innerHTML=`<div class="modal-loading"><span class="spinner"></span> Generating profile card...</div>`;
+
+  // Fetch AI summary
+  const aiText=await getAISummary(idx);
+  const verdict=verdictFromData(r);
+
+  // Build demand tags
+  const demandTags=[];
+  if(r.years_experience!=null) demandTags.push(`<span class="demand-tag demand-exp">⏱ ${r.years_experience}y experience</span>`);
+  if(r.education) demandTags.push(`<span class="demand-tag demand-edu">🎓 ${r.education.split(',')[0]||r.education}</span>`);
+  if((r.languages||[]).length) demandTags.push(`<span class="demand-tag demand-lang">🌐 ${r.languages.join(', ')}</span>`);
+  if(r.location) demandTags.push(`<span class="demand-tag demand-loc">📍 ${r.location}</span>`);
+
+  document.getElementById('modal-body').innerHTML=`
+    <div class="verdict-banner ${verdict.cls}">
+      <div class="verdict-label">${verdict.label}</div>
+      <div class="verdict-text">${verdict.text}</div>
+    </div>
+
+    ${aiText?`<div class="ai-summary-box">
+      <div class="ai-label">HR Recruiter Summary <span>AI</span></div>
+      <div class="ai-text">${aiText}</div>
+    </div>`:''}
+
+    ${demandTags.length?`<div class="section-label">Quick Profile</div>
+    <div class="demand-wrap">${demandTags.join('')}</div>`:''}
+
+    ${(r.skills||[]).length?`<div class="section-label">Skills</div>
+    <div class="skills-wrap">${r.skills.map(s=>`<span class="skill-pill">${s}</span>`).join('')}</div>`:''}
+
+    <div class="section-label">Contact Details</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="i-label">Email</div><div class="i-val">${r.email?`<a href="mailto:${r.email}">${r.email}</a>`:'—'}</div></div>
+      <div class="info-item"><div class="i-label">Phone</div><div class="i-val">${r.phone||'—'}</div></div>
+      <div class="info-item"><div class="i-label">Location</div><div class="i-val">${r.location||'—'}</div></div>
+      <div class="info-item"><div class="i-label">Last Employer</div><div class="i-val">${r.last_employer||'—'}</div></div>
+      <div class="info-item full"><div class="i-label">Education</div><div class="i-val">${r.education||'—'}</div></div>
+    </div>
+
+    <div class="modal-nav">
+      <button class="btn-outline" style="font-size:13px;padding:7px 16px" onclick="navigateModal(-1)" ${idx===0?'disabled':''}>← Previous</button>
+      <span class="nav-counter">${idx+1} of ${results.length}</span>
+      <button class="btn-outline" style="font-size:13px;padding:7px 16px" onclick="navigateModal(1)" ${idx===results.length-1?'disabled':''}>Next →</button>
+    </div>`;
+}
+
+function navigateModal(dir){
+  const next=currentModalIdx+dir;
+  if(next>=0&&next<results.length) openModal(next);
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('profile-modal'))
+    document.getElementById('profile-modal').classList.remove('open');
+}
+
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('profile-modal').classList.contains('open')) return;
+  if(e.key==='Escape') document.getElementById('profile-modal').classList.remove('open');
+  if(e.key==='ArrowRight') navigateModal(1);
+  if(e.key==='ArrowLeft') navigateModal(-1);
+});
+
+// ── CLEAR / EXPORT ─────────────────────────────────────────────────────
+function clearResults(){
+  if(!confirm('Clear all parsed results?')) return;
+  results=[];Object.keys(aiSummaryCache).forEach(k=>delete aiSummaryCache[k]);
+  document.getElementById('res-count').textContent='0';
   renderResults();
 }
 
-// ── EXPORT ─────────────────────────────────────────────────────────────
-function downloadExcel() {
-  if (!results.length) { toast('No data to export'); return; }
-
-  const rows = results.map((r,i) => ({
-    'SN': i+1,
-    'Full Name': r.full_name||'',
-    'Email': r.email||'',
-    'Phone': r.phone||'',
-    'Location': r.location||'',
-    'Current Title': r.current_title||'',
-    'Years of Experience': r.years_experience||'',
-    'Education': r.education||'',
-    'Skills': (r.skills||[]).join(', '),
-    'Languages': (r.languages||[]).join(', '),
-    'Last Employer': r.last_employer||'',
-    'Professional Summary': r.summary||'',
-    'Source File': r._filename||'',
-    'Parsed On': r._parsed_at||'',
-    'Data Quality': r._guessed ? 'File unreadable — data may be inaccurate' : 'Extracted from actual CV text'
+function downloadExcel(){
+  if(!results.length){toast('No data to export');return;}
+  const rows=results.map((r,i)=>({
+    'SN':i+1,'Full Name':r.full_name||'','Email':r.email||'','Phone':r.phone||'',
+    'Location':r.location||'','Current Title':r.current_title||'',
+    'Years of Experience':r.years_experience||'','Education':r.education||'',
+    'Skills':(r.skills||[]).join(', '),'Languages':(r.languages||[]).join(', '),
+    'Last Employer':r.last_employer||'','Professional Summary':r.summary||'',
+    'AI HR Summary':aiSummaryCache[i]||'(open profile card to generate)',
+    'Source File':r._filename||'','Parsed On':r._parsed_at||'',
+    'Data Quality':r._guessed?'File unreadable':'Extracted from CV text'
   }));
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [5,22,28,16,18,26,10,30,35,18,22,50,28,20,30].map(w=>({wch:w}));
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'CV Database');
-
-  const ws2 = XLSX.utils.aoa_to_sheet([
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[5,22,28,16,18,26,10,30,35,18,22,50,60,28,20,30].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'CV Database');
+  const ws2=XLSX.utils.aoa_to_sheet([
     ['CV Parser Report — Maharaja Casino HR'],[''],
-    ['Generated On', new Date().toLocaleString('en-GB')],
-    ['Total CVs', results.length],
-    ['With Email', results.filter(r=>r.email).length],
-    ['With Phone', results.filter(r=>r.phone).length],
-    ['Unreadable Files', results.filter(r=>r._guessed).length],
+    ['Generated On',new Date().toLocaleString('en-GB')],
+    ['Total CVs',results.length],['With Email',results.filter(r=>r.email).length],
+    ['With Phone',results.filter(r=>r.phone).length],['Errors',results.filter(r=>r._guessed).length]
   ]);
-  ws2['!cols'] = [{wch:30},{wch:25}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
-
-  const today = new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
-  XLSX.writeFile(wb, `CV_Database_${today}.xlsx`);
-  toast('Excel downloaded ✓', true);
+  ws2['!cols']=[{wch:30},{wch:25}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+  XLSX.writeFile(wb,`CV_Database_${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.xlsx`);
+  toast('Excel downloaded ✓',true);
 }
 
-function copyCSV() {
-  if (!results.length) { toast('No data to copy'); return; }
-  const h = ['SN','Name','Email','Phone','Location','Title','Experience','Education','Skills','Last Employer'];
-  const rows = results.map((r,i) => [
+function copyCSV(){
+  if(!results.length){toast('No data to copy');return;}
+  const h=['SN','Name','Email','Phone','Location','Title','Experience','Education','Skills','Last Employer'];
+  const rows=results.map((r,i)=>[
     i+1,r.full_name,r.email,r.phone,r.location,r.current_title,
     r.years_experience,r.education,(r.skills||[]).join(';'),r.last_employer
   ].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
   navigator.clipboard.writeText([h.join(','),...rows].join('\n'));
-  toast('CSV copied ✓', true);
+  toast('CSV copied ✓',true);
 }
 
 let toastTimer;
-function toast(msg, success=false) {
-  const el = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  el.className = 'toast'+(success?' toast-success':'');
-  el.style.display = 'flex';
+function toast(msg,success=false){
+  const el=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  el.className='toast'+(success?' toast-success':'');
+  el.style.display='flex';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.style.display='none', 3500);
+  toastTimer=setTimeout(()=>el.style.display='none',3500);
 }
 </script>
 </body>
