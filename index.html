@@ -166,8 +166,8 @@
       3. Copy key (starts with gsk_) and paste below
     </div>
     <input type="text" id="groq-key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-    <p class="hint">Stored only in your browser. Never shared.</p>
-    <button class="btn-gold" style="width:100%" onclick="saveKey()">Save & Start →</button>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:1rem;">Stored only in your browser. Never shared.</p>
+    <button id="save-key-btn" class="btn-gold" style="width:100%;justify-content:center">Save & Start →</button>
   </div>
 </div>
 
@@ -249,6 +249,43 @@
 <div id="toast"><span class="t-icon">✓</span><span id="toast-msg"></span></div>
 
 <script>
+// Wire up key button immediately — before anything else loads
+(function(){
+  function initKeyButton(){
+    var overlay=document.getElementById('setup-overlay');
+    var input=document.getElementById('groq-key-input');
+    var btn=document.getElementById('save-key-btn');
+    if(!btn||!input||!overlay) return;
+
+    // Check if already saved
+    var saved=localStorage.getItem('groq_key');
+    if(saved&&saved.length>10) overlay.style.display='none';
+
+    function doSave(){
+      var k=input.value.trim();
+      if(!k||k.length<10){
+        input.style.borderColor='var(--danger)';
+        input.placeholder='Please paste your key here first';
+        return;
+      }
+      input.style.borderColor='';
+      localStorage.setItem('groq_key',k);
+      overlay.style.display='none';
+    }
+
+    btn.addEventListener('click', doSave);
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter') doSave(); });
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', initKeyButton);
+  } else {
+    initKeyButton();
+  }
+})();
+</script>
+
+<script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 let files=[], results=[], currentModalIdx=0;
@@ -256,17 +293,7 @@ const aiSummaryCache={};
 const remarksStore={};
 
 // ── KEY ────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  const k=localStorage.getItem('groq_key');
-  if(k&&k.length>10) document.getElementById('setup-overlay').style.display='none';
-});
-function saveKey(){
-  const k=document.getElementById('groq-key-input').value.trim();
-  if(!k||k.length<10){alert('Please paste your Groq API key');return;}
-  localStorage.setItem('groq_key',k);
-  document.getElementById('setup-overlay').style.display='none';
-  toast('Groq key saved!',true);
-}
+function saveKey(){ /* handled by inline script above */ }
 function changeKey(){if(confirm('Change Groq API key?')){localStorage.removeItem('groq_key');location.reload();}}
 
 // ── TABS ───────────────────────────────────────────────────────────────
