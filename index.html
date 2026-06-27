@@ -194,14 +194,15 @@
       ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
       <div class="upload-icon">📂</div>
       <h3>Drop CV files here or browse</h3>
-      <p>All PDF types supported — image PDFs now read via AI vision</p>
+      <p>Upload any format — PDFs, Word docs, or even CV photos from WhatsApp</p>
       <div class="format-badges">
         <span class="fmt-badge good">✓ PDF (any type)</span>
         <span class="fmt-badge good">✓ DOCX</span>
         <span class="fmt-badge good">✓ TXT</span>
+        <span class="fmt-badge good">✓ JPG / PNG image</span>
         <span class="fmt-badge ok">⚠ DOC</span>
       </div>
-      <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" onchange="addFiles(this.files)">
+      <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp" onchange="addFiles(this.files)">
       <button class="browse-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse Files</button>
     </div>
     <div id="queue-section" style="display:none">
@@ -283,7 +284,7 @@ function onDrop(e){e.preventDefault();document.getElementById('dropzone').classL
 function addFiles(newFiles){
   Array.from(newFiles).forEach(f=>{
     const ext=f.name.split('.').pop().toLowerCase();
-    if(['pdf','doc','docx','txt'].includes(ext))
+    if(['pdf','doc','docx','txt','jpg','jpeg','png','webp'].includes(ext))
       files.push({id:Date.now()+Math.random(),file:f,ext,status:'pending',progress:0,statusText:''});
   });
   renderQueue();
@@ -294,7 +295,7 @@ function renderQueue(){
   document.getElementById('queue-label').textContent=`${files.length} file${files.length!==1?'s':''} queued`;
   document.getElementById('file-list').innerHTML=files.map(f=>`
     <div class="file-item ${f.status}">
-      <div class="file-icon">${f.ext==='pdf'?'📕':f.ext==='txt'?'📄':'📝'}</div>
+      <div class="file-icon">${f.ext==='pdf'?'📕':f.ext==='txt'?'📄':['jpg','jpeg','png','webp'].includes(f.ext)?'🖼️':'📝'}</div>
       <div class="file-info">
         <div class="file-name">${f.file.name}</div>
         <div class="file-meta">${(f.file.size/1024).toFixed(1)} KB · .${f.ext.toUpperCase()}${f.statusText?' · '+f.statusText:''}</div>
@@ -353,7 +354,16 @@ async function extractText(fileObj){
     const images=await pdfToBase64Images(file);
     return {type:'images',content:images};
   }
-  if(ext==='doc'){
+  if(['jpg','jpeg','png','webp'].includes(ext)){
+    // Read image directly as base64 for vision
+    const dataUrl=await new Promise(res=>{
+      const reader=new FileReader();
+      reader.onload=e=>res(e.target.result);
+      reader.readAsDataURL(file);
+    });
+    const base64=dataUrl.split(',')[1];
+    return {type:'images',content:[base64],mime:file.type||'image/jpeg'};
+  }
     try{
       const t=await file.text();
       const readable=t.replace(/[^\x20-\x7E\n\r\t]/g,'').trim();
@@ -401,9 +411,8 @@ async function callGroq(messages){
   return data.choices?.[0]?.message?.content||'{}';
 }
 
-async function callGroqVision(imageBase64){
+async function callGroqVision(imageBase64, mime='image/jpeg'){
   const key=localStorage.getItem('groq_key');
-  // Use meta-llama vision model for image reading
   const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
@@ -415,7 +424,7 @@ async function callGroqVision(imageBase64){
         {role:'system',content:SYSTEM_PROMPT},
         {role:'user',content:[
           {type:'text',text:'This is a CV/resume image. Extract all information carefully. Read every detail including contact numbers and emails exactly as shown.'},
-          {type:'image_url',image_url:{url:`data:image/jpeg;base64,${imageBase64}`}}
+          {type:'image_url',image_url:{url:`data:${mime};base64,${imageBase64}`}}
         ]}
       ]
     })
@@ -451,17 +460,15 @@ async function parseAll(){
         f.progress=85;
       } else if(extracted.type==='images'){
         f.statusText='Reading via AI vision...';renderQueue();
-        // Send first page image to vision model
-        // Merge results from multiple pages if needed
         let mergedData={};
+        const mime=extracted.mime||'image/jpeg';
         for(let i=0;i<extracted.content.length;i++){
           f.statusText=`Vision scan page ${i+1}/${extracted.content.length}...`;
           f.progress=40+(i*20);renderQueue();
           try{
-            const pageRaw=await callGroqVision(extracted.content[i]);
+            const pageRaw=await callGroqVision(extracted.content[i],mime);
             const pageClean=pageRaw.replace(/```json|```/g,'').trim();
             const pageData=JSON.parse(pageClean);
-            // Merge — keep first non-null value for each field
             Object.keys(pageData).forEach(k=>{
               if(!mergedData[k]&&pageData[k]) mergedData[k]=pageData[k];
               if(k==='skills'&&Array.isArray(pageData[k])){
@@ -482,7 +489,7 @@ async function parseAll(){
       const parsed=JSON.parse(clean);
       parsed._filename=f.file.name;
       parsed._parsed_at=new Date().toLocaleString('en-GB');
-      parsed._method=extracted.type==='images'?'vision':'text';
+      parsed._method=extracted.type==='images'?(['jpg','jpeg','png','webp'].includes(f.ext)?'vision-image':'vision-pdf'):'text';
       results.push(parsed);
       f.status='done';f.progress=100;f.statusText='';
       document.getElementById('res-count').textContent=results.length;
@@ -516,7 +523,7 @@ function renderResults(){
     <div class="stat-card"><div class="s-label">Avg Experience</div><div class="s-value">${avgExp}${avgExp!=='N/A'?'y':''}</div></div>
     <div class="stat-card"><div class="s-label">Have Email</div><div class="s-value">${results.filter(r=>r.email).length}</div></div>
     <div class="stat-card"><div class="s-label">Have Phone</div><div class="s-value">${results.filter(r=>r.phone).length}</div></div>
-    <div class="stat-card"><div class="s-label">Via Vision</div><div class="s-value" style="color:var(--gold)">${results.filter(r=>r._method==='vision').length}</div></div>`;
+    <div class="stat-card"><div class="s-label">Via Vision</div><div class="s-value" style="color:var(--gold)">${results.filter(r=>r._method&&r._method.startsWith('vision')).length}</div></div>`;
 
   area.innerHTML=`
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:.75rem">👆 Click any row to view full profile + add remarks</p>
@@ -530,7 +537,7 @@ function renderResults(){
           ${results.map((r,i)=>`
             <tr onclick="openModal(${i})">
               <td class="sn-cell">${i+1}</td>
-              <td class="name-cell">${r.full_name||'<span class="muted-cell">—</span>'} ${r._method==='vision'?'<span style="font-size:10px;color:var(--gold);opacity:.7">👁</span>':''}</td>
+              <td class="name-cell">${r.full_name||'<span class="muted-cell">—</span>'} ${r._method&&r._method.startsWith('vision')?'<span style="font-size:10px;color:var(--gold);opacity:.7">👁</span>':''}</td>
               <td class="email-cell">${r.email?`<a href="mailto:${r.email}" onclick="event.stopPropagation()">${r.email}</a>`:'<span class="muted-cell">—</span>'}</td>
               <td>${r.phone||'<span class="muted-cell">—</span>'}</td>
               <td>${r.location||'<span class="muted-cell">—</span>'}</td>
@@ -630,7 +637,7 @@ async function openModal(idx){
       <div class="info-item"><div class="i-label">Location</div><div class="i-val">${r.location||'—'}</div></div>
       <div class="info-item"><div class="i-label">Last Employer</div><div class="i-val">${r.last_employer||'—'}</div></div>
       <div class="info-item full"><div class="i-label">Education</div><div class="i-val">${r.education||'—'}</div></div>
-      <div class="info-item full"><div class="i-label">Read Method</div><div class="i-val" style="color:var(--text-muted)">${r._method==='vision'?'👁 AI Vision (image PDF)':'📄 Text extraction'} · Parsed ${r._parsed_at}</div></div>
+      <div class="info-item full"><div class="i-label">Read Method</div><div class="i-val" style="color:var(--text-muted)">${r._method==='vision-image'?'👁 AI Vision (photo/image file)':r._method==='vision-pdf'?'👁 AI Vision (image PDF)':'📄 Text extraction'} · Parsed ${r._parsed_at}</div></div>
     </div>
 
     <!-- REMARKS -->
@@ -697,7 +704,7 @@ function downloadExcel(){
     'Professional Summary':r.summary||'',
     'AI HR Summary':aiSummaryCache[i]||'(open profile to generate)',
     'HR Remarks':remarksStore[i]||'',
-    'Read Method':r._method==='vision'?'AI Vision (image PDF)':'Text extraction',
+    'Read Method':r._method==='vision-image'?'AI Vision (photo/image)':r._method==='vision-pdf'?'AI Vision (image PDF)':'Text extraction',
     'Source File':r._filename||'',
     'Parsed On':r._parsed_at||''
   }));
@@ -711,7 +718,7 @@ function downloadExcel(){
     ['Total CVs',results.length],
     ['With Email',results.filter(r=>r.email).length],
     ['With Phone',results.filter(r=>r.phone).length],
-    ['Via AI Vision',results.filter(r=>r._method==='vision').length],
+    ['Via AI Vision',results.filter(r=>r._method&&r._method.startsWith('vision')).length],
     ['With HR Remarks',Object.keys(remarksStore).length]
   ]);
   ws2['!cols']=[{wch:30},{wch:25}];
